@@ -3,21 +3,21 @@ import 'package:provider/provider.dart';
 
 import '../../domain/services/user_service.dart';
 
-class ViewModelState{
+class _ViewModelState{
   final String ageTitle;
 
-  ViewModelState({
+  _ViewModelState({
     required this.ageTitle,
   });
 }
 
-class ViewModel extends ChangeNotifier{
+class _ViewModel extends ChangeNotifier{
   final _userService = UserService();
   
-  var _state = ViewModelState(ageTitle: '');
-  ViewModelState get state => _state;
+  var _state = _ViewModelState(ageTitle: '');
+  _ViewModelState get state => _state;
 
-  ViewModel(){
+  _ViewModel(){
     loadValue();
   }
 
@@ -39,13 +39,20 @@ class ViewModel extends ChangeNotifier{
   void _updateState(){
     final user = _userService.user;
 
-    _state = ViewModelState(ageTitle: user.age.toString(),);
+    _state = _ViewModelState(ageTitle: user.age.toString(),);
     notifyListeners();
   }
 }
 
 class ExampleWidget extends StatelessWidget {
   const ExampleWidget({Key? key}) : super(key: key);
+
+  static Widget create() {
+    return ChangeNotifierProvider(
+      create: (_) => _ViewModel(),
+      child: const ExampleWidget()
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +77,7 @@ class _AgeTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ageTitle = context.select((ViewModel vm) => vm.state.ageTitle);
+    final ageTitle = context.select((_ViewModel vm) => vm.state.ageTitle);
     return Text(ageTitle);
   } 
 }
@@ -80,7 +87,7 @@ class _AgeIncrementWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<ViewModel>();
+    final viewModel = context.read<_ViewModel>();
     return ElevatedButton(
       onPressed: viewModel.onIncrementButtonPressed,
       child: const Text('+'),
@@ -93,7 +100,7 @@ class _AgeDecrementWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<ViewModel>();
+    final viewModel = context.read<_ViewModel>();
     return ElevatedButton(
       onPressed: viewModel.onDecrementButtonPressed,
       child: const Text('-'),
