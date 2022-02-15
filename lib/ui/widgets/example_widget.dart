@@ -1,6 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_mvvm_counter/domain/services/auth_service.dart';
-import 'package:flutter_mvvm_counter/ui/navigation/main_navigation.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/services/user_service.dart';
@@ -15,53 +15,30 @@ class _ViewModelState{
 
 class _ViewModel extends ChangeNotifier{
   final _userService = UserService();
-  // final _authService = AuthService();
 
   var _state = _ViewModelState(ageTitle: '');
   _ViewModelState get state => _state;
+  StreamSubscription? userSubscription;
 
   _ViewModel(){
-    // loadValue();
-    _userService.startListenUser((user) {
+    _state = _ViewModelState(
+      ageTitle: _userService.user.age.toString(),
+    );
+    userSubscription = _userService.userStream.listen((user) {
       _state = _ViewModelState(
-        ageTitle: user.age.toString(),
+        ageTitle: _userService.user.age.toString(),
       );
       notifyListeners();
     });
+    _userService.openConnect();
   }
 
   @override
   void dispose() {
-    _userService.stopListenUser();
+    userSubscription?.cancel();
+    _userService.closeConnect();
     super.dispose();
   }
-
-  // Future<void> loadValue() async{
-  //   await _userService.initialize();
-  //   _updateState();
-  // }
-
-  // Future<void> onIncrementButtonPressed() async{
-  //   _userService.incrementAge();
-  //   _updateState();
-  // }
-  //
-  // Future<void> onDecrementButtonPressed() async{
-  //   _userService.decrementAge();
-  //   _updateState();
-  // }
-  //
-  // Future<void> onLogoutPressed(BuildContext context) async{
-  //   await _authService.logout();
-  //   MainNavigation.showLoader(context);
-  // }
-  //
-  // void _updateState(){
-  //   final user = _userService.user;
-  //
-  //   _state = _ViewModelState(ageTitle: user.age.toString(),);
-  //   notifyListeners();
-  // }
 }
 
 class ExampleWidget extends StatelessWidget {
@@ -78,21 +55,12 @@ class ExampleWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.read<_ViewModel>();
     return Scaffold(
-      // appBar: AppBar(
-      //   actions: [
-      //     ElevatedButton(
-      //       onPressed: () => viewModel.onLogoutPressed(context),
-      //       child: const Text('Выход'))
-      //   ],
-      // ),
       body: SafeArea(
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: const [
                 _AgeTitle(),
-                // _AgeIncrementWidget(),
-                // _AgeDecrementWidget(),
               ],
             ),
       )),
@@ -109,30 +77,3 @@ class _AgeTitle extends StatelessWidget {
     return Text(ageTitle);
   } 
 }
-
-// class _AgeIncrementWidget extends StatelessWidget {
-//   const _AgeIncrementWidget({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final viewModel = context.read<_ViewModel>();
-//     return ElevatedButton(
-//       onPressed: viewModel.onIncrementButtonPressed,
-//       child: const Text('+'),
-//     );
-//   }
-// }
-//
-// class _AgeDecrementWidget extends StatelessWidget {
-//   const _AgeDecrementWidget({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final viewModel = context.read<_ViewModel>();
-//     return ElevatedButton(
-//       onPressed: viewModel.onDecrementButtonPressed,
-//       child: const Text('-'),
-//     );
-//   }
-// }
-//
